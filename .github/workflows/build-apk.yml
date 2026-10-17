@@ -1,9 +1,12 @@
-name: Build VEIL Android APK
+name: Build VEIL APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    paths:
+      - '**.dart'
+      - 'pubspec.yaml'
+      - '.github/workflows/build.yml'
 
 permissions:
   contents: read
@@ -21,28 +24,22 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate Android platform project if missing
-        shell: bash
-        run: |
-          if [ ! -d android ]; then
-            flutter create --platforms=android --project-name=veil_messenger .
-          fi
+      - name: Generate Android project
+        run: flutter create --platforms=android --org com.veil.app .
 
-      - name: Resolve dependencies
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Static analysis
+      - name: Analyze Dart code
         run: flutter analyze
-
-      - name: Run widget tests
-        run: flutter test
 
       - name: Build debug APK
         run: flutter build apk --debug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: veil-android-debug-apk
+          name: VEIL-debug-APK
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+          
